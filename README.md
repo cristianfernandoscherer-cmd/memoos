@@ -30,10 +30,18 @@ make run-cli    # Executa interface CLI
 
 ### Opcional: Bibliotecas ONNX
 
-Para embeddings locais:
-```bash
-make download-libs  # Baixa bibliotecas ONNX
-```
+Para embeddings locais (sem depender de Ollama):
+
+1. **Baixe as bibliotecas ONNX** (não versionadas no Git):
+   ```bash
+   make download-libs  # Baixa para Linux/macOS/Windows
+   ```
+
+2. **As bibliotecas são salvas em** `libs/` e ignoradas pelo Git
+
+3. **Se não baixar**, o sistema usará:
+   - Ollama (se disponível) para embeddings
+   - Ou não terá embeddings locais
 
 ### Configuração
 
