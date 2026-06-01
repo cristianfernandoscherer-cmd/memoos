@@ -45,6 +45,9 @@ Thumbs.db
 # External libraries
 libs/
 
+# Assets (models, etc.)
+assets/
+
 # Logs
 *.log
 
