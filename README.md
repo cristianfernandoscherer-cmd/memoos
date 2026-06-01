@@ -87,71 +87,86 @@ Configurar no Cursor em `.cursor/mcp.json`:
 
 ## Ferramentas MCP
 
-O servidor MCP expõe três ferramentas principais:
+As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natural. Aqui estão exemplos de como usar:
 
-### 1. `memory_save`
+### Exemplo 1: Salvar uma memória
 
-Salva uma memória semanticamente.
+**Prompt para o assistente:**
+> "Salva esta informação: No projeto WHMCS, o processamento de estorno Pix reutiliza o e2eid. Isso está na categoria pagamentos."
 
+**A ferramenta `memory_save` será chamada automaticamente com:**
 ```json
 {
-  "cwd": "/home/user/projects/whmcs",
-  "category": "payments",
-  "content": "Refund Pix reutiliza e2eid",
+  "cwd": "/caminho/do/projeto/whmcs",
+  "category": "pagamentos",
+  "content": "No projeto WHMCS, o processamento de estorno Pix reutiliza o e2eid.",
   "metadata": {
-    "autor": "joao",
-    "prioridade": "alta"
+    "contexto": "desenvolvimento",
+    "data": "2024-01-15"
   }
 }
 ```
 
-**Parâmetros:**
-- `cwd` (requerido): Diretório do projeto para resolução de contexto
-- `content` (requerido): Conteúdo da memória a ser salvo
-- `category` (opcional): Categoria para separação de contexto
-- `metadata` (opcional): Metadados em pares chave-valor
+### Exemplo 2: Buscar memórias relacionadas
 
-### 2. `memory_search`
+**Prompt para o assistente:**
+> "Procure por informações sobre como funciona o estorno Pix no projeto WHMCS."
 
-Busca memórias por similaridade semântica.
-
+**A ferramenta `memory_search` será chamada com:**
 ```json
 {
-  "cwd": "/home/user/projects/whmcs",
-  "query": "como funciona estorno pix?",
-  "category": "payments",
-  "limit": 10,
-  "min_score": 0.5,
-  "max_distance": 0.8
+  "cwd": "/caminho/do/projeto/whmcs",
+  "query": "como funciona estorno Pix",
+  "category": "pagamentos",
+  "limit": 5,
+  "min_score": 0.7
 }
 ```
 
-**Parâmetros:**
-- `cwd` (requerido): Diretório do projeto
-- `query` (requerido): Texto para busca semântica
-- `limit` (opcional): Máximo de resultados (padrão: 10, máximo: 100)
-- `min_score` (opcional): Pontuação mínima de similaridade (0.0-1.0, padrão: 0.5)
-- `max_distance` (opcional): Distância euclidiana máxima
-- `category` (opcional): Filtrar por categoria
+### Exemplo 3: Listar memórias recentes
 
-### 3. `memory_list`
+**Prompt para o assistente:**
+> "Mostra as memórias recentes sobre pagamentos no projeto atual."
 
-Lista memórias recentes.
-
+**A ferramenta `memory_list` será chamada com:**
 ```json
 {
-  "cwd": "/home/user/projects/whmcs",
-  "category": "payments",
-  "limit": 20,
-  "offset": 0
+  "cwd": "/caminho/do/projeto/whmcs",
+  "category": "pagamentos",
+  "limit": 10
 }
 ```
 
-**Parâmetros:**
-- `cwd` (requerido): Diretório do projeto
-- `category` (opcional): Filtrar por categoria
-- `limit` (opcional): Máximo de resultados (padrão: 20, máximo: 100)
-- `offset` (opcional): Offset de paginação (padrão: 0)
+### Exemplo 4: Busca sem categoria específica
+
+**Prompt para o assistente:**
+> "Lembra de algo sobre integração com bancos?"
+
+**A ferramenta `memory_search` será chamada sem filtro de categoria:**
+```json
+{
+  "cwd": "/caminho/do/projeto/whmcs",
+  "query": "integração com bancos",
+  "limit": 10
+}
+```
+
+### Como funciona
+
+1. **Fale naturalmente** com o assistente sobre o que você quer salvar ou buscar
+2. **O assistente identifica** automaticamente:
+   - O diretório do projeto (`cwd`)
+   - A categoria relevante (se mencionada)
+   - O conteúdo principal da memória
+3. **As ferramentas são chamadas** com os parâmetros apropriados
+4. **Os resultados são apresentados** em linguagem natural
+
+### Dicas de uso
+
+- **Seja específico** ao descrever o conteúdo
+- **Use categorias** para organizar melhor as informações
+- **Mencione o projeto** se estiver trabalhando em múltiplos locais
+- **O contexto atual** é automaticamente detectado com base no `cwd`
 
 ```json
 {
