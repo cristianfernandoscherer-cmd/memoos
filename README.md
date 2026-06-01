@@ -91,8 +91,13 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 
 ### Exemplo 1: Salvar uma memória
 
-**Prompt para o assistente:**
-> "Salva esta informação: No projeto WHMCS, o processamento de estorno Pix reutiliza o e2eid. Isso está na categoria pagamentos."
+**Formas simples de pedir para salvar:**
+
+> "Salve essa informação no memoos: No projeto WHMCS, o processamento de estorno Pix reutiliza o e2eid."
+> 
+> "Guarde isso: O e2eid é reutilizado nos processamentos de estorno Pix do WHMCS."
+>
+> "Memorize isso: Ref Pix no WHMCS reutiliza e2eid, categoria pagamentos."
 
 **A ferramenta `memory_save` será chamada automaticamente com:**
 ```json
@@ -101,8 +106,8 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
   "category": "pagamentos",
   "content": "No projeto WHMCS, o processamento de estorno Pix reutiliza o e2eid.",
   "metadata": {
-    "contexto": "desenvolvimento",
-    "data": "2024-01-15"
+    "fonte": "usuário",
+    "contexto": "desenvolvimento"
   }
 }
 ```
@@ -160,6 +165,27 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
    - O conteúdo principal da memória
 3. **As ferramentas são chamadas** com os parâmetros apropriados
 4. **Os resultados são apresentados** em linguagem natural
+
+### Formas simples de pedir
+
+**Para salvar:**
+- "Salve isso: [informação]"
+- "Guarde isso: [informação]" 
+- "Memorize: [informação]"
+- "Lembre disso: [informação]"
+- "Salva essa info: [informação]"
+
+**Para buscar:**
+- "Lembra de algo sobre [assunto]?"
+- "Procure por informações sobre [assunto]"
+- "Tem algo sobre [tema]?"
+- "Busca por [assunto] no memoos"
+
+**Para listar:**
+- "Mostra tudo que você guardou"
+- "Quais informações você tem?"
+- "Lista as memórias recentes"
+- "O que você lembra sobre [categoria]?"
 
 ### Dicas de uso
 
