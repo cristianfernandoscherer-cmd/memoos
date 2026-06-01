@@ -20,6 +20,9 @@ MemoOS é uma infraestrutura de memória semântica local para agentes e LLMs.
 git clone https://github.com/cristian-scherer/memoos.git
 cd memoos
 
+# Baixar bibliotecas ONNX (essenciais para embeddings locais)
+make download-libs
+
 # Compilar binários
 make build
 
@@ -28,20 +31,7 @@ make run        # Executa servidor MCP
 make run-cli    # Executa interface CLI
 ```
 
-### Opcional: Bibliotecas ONNX
-
-Para embeddings locais (sem depender de Ollama):
-
-1. **Baixe as bibliotecas ONNX** (não versionadas no Git):
-   ```bash
-   make download-libs  # Baixa para Linux/macOS/Windows
-   ```
-
-2. **As bibliotecas são salvas em** `libs/` e ignoradas pelo Git
-
-3. **Se não baixar**, o sistema usará:
-   - Ollama (se disponível) para embeddings
-   - Ou não terá embeddings locais
+**Nota:** As bibliotecas ONNX são salvas em `libs/` (não versionadas no Git)
 
 ### Configuração
 
