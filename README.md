@@ -174,6 +174,13 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 - "Memorize: [informação]"
 - "Lembre disso: [informação]"
 - "Salva essa info: [informação]"
+- "Memorize o contexto atual: [informação]"  (util para documentar o que está fazendo)
+
+**Exemplos práticos com "contexto atual":**
+- "Memorize o contexto atual: Estou implementando o login OAuth2 no módulo auth"
+- "Lembre disso: Nesta branch, adicionamos suporte a PostgreSQL"
+- "Guarde isso: O problema estava no cache do Redis, resolvido com `FLUSHALL`"
+- "Memorize: Debug foi feito no arquivo user.go, linha 42"
 
 **Para buscar:**
 - "Lembra de algo sobre [assunto]?"
