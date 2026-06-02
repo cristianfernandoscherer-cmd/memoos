@@ -52,16 +52,47 @@ vim ~/.config/memoos/config.yaml
 make build
 
 # Salvar memória
-./bin/memoos-cli add \
-  --cwd /home/user/projects/whmcs \
+./bin/memoos-cli save \
+  --project meu-projeto \
   --category payments \
   --content "Refund Pix reutiliza e2eid"
 
 # Buscar memórias
 ./bin/memoos-cli search \
-  --cwd /home/user/projects/whmcs \
+  --project meu-projeto \
   --query "como funciona estorno pix?"
+
+# Listar memórias
+./bin/memoos-cli list --project meu-projeto --category payments
+
+# Remover memórias
+./bin/memoos-cli clear --project meu-projeto
+./bin/memoos-cli clear --project meu-projeto --category payments
+./bin/memoos-cli clear --force  # Remove tudo
 ```
+
+#### Comando Clear
+
+O comando `clear` permite remover memórias de forma segura:
+
+```bash
+# Remover todas as memórias de um projeto
+./bin/memoos-cli clear --project meu-projeto
+
+# Remover memórias de uma categoria específica
+./bin/memoos-cli clear --project meu-projeto --category payments
+
+# Remover TODAS as memórias (todos os projetos)
+./bin/memoos-cli clear --force
+
+# Remover todas as memórias de uma categoria em todos os projetos
+./bin/memoos-cli clear --force --category payments
+```
+
+**Opções do `clear`:**
+- `--project <nome>`: Filtra por projeto (opcional)
+- `--category <nome>`: Filtra por categoria (opcional)
+- `--force`: Pula confirmação (use com cuidado!)
 
 #### MCP Server
 
@@ -158,7 +189,7 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 
 1. **Fale naturalmente** com o assistente sobre o que você quer salvar ou buscar
 2. **O assistente identifica** automaticamente:
-   - O diretório do projeto (`cwd`)
+   - O diretório do projeto (`cwd`) **ou o nome do projeto** (se especificado)
    - A categoria relevante (se mencionada)
    - O conteúdo principal da memória
 3. **As ferramentas são chamadas** com os parâmetros apropriados
@@ -173,6 +204,8 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 - "Lembre disso: [informação]"
 - "Salva essa info: [informação]"
 - "Memorize o contexto atual: [informação]"  (util para documentar o que está fazendo)
+- "Salve isso no projeto whmcs: [informação]"
+- "Memorize no projeto auth: [informação]"
 
 **Exemplos práticos com "contexto atual":**
 - "Memorize o contexto atual: Estou implementando o login OAuth2 no módulo auth"
@@ -185,6 +218,8 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 - "Procure por informações sobre [assunto]"
 - "Tem algo sobre [tema]?"
 - "Busca por [assunto] no memoos"
+- "Lembra de algo sobre [assunto] no projeto whmcs?"
+- "Procure por [assunto] no projeto meu-projeto"
 
 **Para listar:**
 - "Mostra tudo que você guardou"
@@ -198,6 +233,10 @@ As ferramentas MCP permitem salvar e recuperar memórias usando linguagem natura
 - **Use categorias** para organizar melhor as informações
 - **Mencione o projeto** se estiver trabalhando em múltiplos locais
 - **O contexto atual** é automaticamente detectado com base no `cwd`
+
+**Prioridade de parâmetros:**
+- Se mencionar `--project`, ele será usado diretamente
+- Se não mencionar, o sistema usa o caminho atual (`cwd`) para identificar o projeto
 
 ```json
 {
