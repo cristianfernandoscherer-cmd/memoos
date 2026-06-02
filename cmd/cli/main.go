@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+flag.Usage = printUsage
 	flag.Parse()
 
 	args := flag.Args()
@@ -47,6 +48,8 @@ func main() {
 		handleGet(ctx, application, args[1:])
 	case "delete":
 		handleDelete(ctx, application, args[1:])
+	case "clear":
+		handleClear(ctx, application, args[1:])
 	case "categories":
 		handleCategories(ctx, application, args[1:])
 	case "health":
@@ -70,17 +73,23 @@ func printUsage() {
 	fmt.Println("  list        List memories")
 	fmt.Println("  get         Get a memory by ID")
 	fmt.Println("  delete      Delete a memory by ID")
+	fmt.Println("  clear       Clear memories (all or filtered)")
 	fmt.Println("  categories  List categories for a project")
 	fmt.Println("  health      Check system health")
 	fmt.Println()
 	fmt.Println("Examples:")
-	fmt.Println("  memoos-cli save --cwd /home/user/project --category payments --content 'Refund Pix uses e2eid'")
-	fmt.Println("  memoos-cli search --cwd /home/user/project --query 'how does refund work?'")
-	fmt.Println("  memoos-cli list --cwd /home/user/project --category payments")
+	fmt.Println("  memoos-cli save --project my-project --category payments --content 'Refund Pix uses e2eid'")
+	fmt.Println("  memoos-cli search --project my-project --query 'how does refund work?'")
+	fmt.Println("  memoos-cli list --project my-project --category payments")
+	fmt.Println("  memoos-cli clear --project my-project                # Remove all memories for this project")
+	fmt.Println("  memoos-cli clear --project my-project --category payments  # Remove by category")
+	fmt.Println("  memoos-cli clear --force                              # Remove ALL memories")
+	fmt.Println("  memoos-cli clear --force --category payments          # Remove ALL by category")
 }
 
 func handleSave(ctx context.Context, app *app.App, args []string) {
 	flags := flag.NewFlagSet("save", flag.ExitOnError)
+	project := flags.String("project", "", "Project name")
 	cwd := flags.String("cwd", getCWD(), "Current working directory")
 	category := flags.String("category", "", "Memory category (optional)")
 	content := flags.String("content", "", "Memory content")
@@ -100,6 +109,7 @@ func handleSave(ctx context.Context, app *app.App, args []string) {
 	}
 
 	input := models.MemoryInput{
+		Project:  *project,
 		CWD:      *cwd,
 		Category: categoryPtr,
 		Content:  *content,
@@ -120,6 +130,7 @@ func handleSave(ctx context.Context, app *app.App, args []string) {
 
 func handleSearch(ctx context.Context, app *app.App, args []string) {
 	flags := flag.NewFlagSet("search", flag.ExitOnError)
+	project := flags.String("project", "", "Project name")
 	cwd := flags.String("cwd", getCWD(), "Current working directory")
 	query := flags.String("query", "", "Search query")
 	category := flags.String("category", "", "Filter by category")
@@ -143,6 +154,7 @@ func handleSearch(ctx context.Context, app *app.App, args []string) {
 	}
 
 	input := models.SearchInput{
+		Project:     *project,
 		CWD:         *cwd,
 		Query:       *query,
 		Category:    categoryPtr,
@@ -170,6 +182,7 @@ func handleSearch(ctx context.Context, app *app.App, args []string) {
 
 func handleList(ctx context.Context, app *app.App, args []string) {
 	flags := flag.NewFlagSet("list", flag.ExitOnError)
+	project := flags.String("project", "", "Project name")
 	cwd := flags.String("cwd", getCWD(), "Current working directory")
 	category := flags.String("category", "", "Filter by category")
 	limit := flags.Int("limit", 20, "Maximum results")
@@ -179,8 +192,8 @@ func handleList(ctx context.Context, app *app.App, args []string) {
 		os.Exit(1)
 	}
 
-	projName := ""
-	if *cwd != "" {
+	projName := *project
+	if projName == "" && *cwd != "" {
 		projName = util.ResolvePath(*cwd)
 	}
 
@@ -275,14 +288,15 @@ func handleDelete(ctx context.Context, app *app.App, args []string) {
 
 func handleCategories(ctx context.Context, app *app.App, args []string) {
 	flags := flag.NewFlagSet("categories", flag.ExitOnError)
+	project := flags.String("project", "", "Project name")
 	cwd := flags.String("cwd", getCWD(), "Current working directory")
 
 	if err := flags.Parse(args); err != nil {
 		os.Exit(1)
 	}
 
-	projName := ""
-	if *cwd != "" {
+	projName := *project
+	if projName == "" && *cwd != "" {
 		projName = util.ResolvePath(*cwd)
 	}
 
@@ -310,6 +324,72 @@ func handleHealth(ctx context.Context, app *app.App) {
 	}
 	fmt.Println("Health: OK")
 	fmt.Printf("Embedder: %s (dimension: %d)\n", app.Embedder.Name(), app.Embedder.Dimension())
+}
+
+func handleClear(ctx context.Context, app *app.App, args []string) {
+	flags := flag.NewFlagSet("clear", flag.ExitOnError)
+	project := flags.String("project", "", "Project name (optional - if not provided, clears all memories)")
+	category := flags.String("category", "", "Filter by category (optional)")
+	force := flags.Bool("force", false, "Skip confirmation prompt")
+
+	if err := flags.Parse(args); err != nil {
+		os.Exit(1)
+	}
+
+	filter := models.MemoryFilter{
+		Project:  *project,
+		Category: nil,
+	}
+	if *category != "" {
+		str := *category
+		filter.Category = &str
+	}
+
+	// Count how many memories will be deleted
+	memories, err := app.MemService.List(ctx, filter, nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(memories) == 0 {
+		fmt.Println("No memories found to clear")
+		return
+	}
+
+	action := "clear"
+	if *project == "" {
+		action = "clear ALL memories from all projects"
+	} else {
+		action = fmt.Sprintf("clear %d memories for project %s", len(memories), *project)
+		if *category != "" {
+			action = fmt.Sprintf("clear %d memories in category '%s' for project %s", len(memories), *category, *project)
+		}
+	}
+
+	fmt.Printf("Found %d memories to %s\n", len(memories), action)
+
+	if !*force {
+		fmt.Print("Are you sure? (y/N): ")
+		var response string
+		fmt.Scanln(&response)
+		if response != "y" && response != "Y" {
+			fmt.Println("Operation cancelled")
+			return
+		}
+	}
+
+	count, err := app.MemService.ClearMemories(ctx, filter)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if *project == "" {
+		fmt.Printf("Successfully cleared %d memories from all projects\n", count)
+	} else {
+		fmt.Printf("Successfully cleared %d memories\n", count)
+	}
 }
 
 func getCWD() string {
