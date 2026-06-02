@@ -13,7 +13,6 @@ help:
 	@echo "  make lint          - Run linter"
 	@echo "  make migrate       - Run migrations"
 	@echo "  make libs          - Download ONNX Runtime libraries"
-	@echo "  make download-libs - Download ONNX Runtime libraries"
 
 build:
 	@echo "Building..."
@@ -37,7 +36,7 @@ run:
 	go run ./cmd/server
 
 run-cli:
-	go run ./cmd/cli $(ARGS)
+	go run ./cmd/cli \$(ARGS)
 
 clean:
 	rm -rf bin/ coverage.out
@@ -46,39 +45,43 @@ fmt:
 	go fmt ./...
 
 lint:
-	@golangci-lint --version > /dev/null || (echo "Installing golangci-lint..." && curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin)
+	@golangci-lint --version > /dev/null || (echo "Installing golangci-lint..." && curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$(shell go env GOPATH)/bin)
 	golangci-lint run
-
-libs: download-libs
 
 download-libs:
 	@echo "Downloading ONNX Runtime libraries..."
 	@mkdir -p libs
-	@if [ "$(shell uname -s)" = "Linux" ]; then \
-		if [ "$(shell uname -m)" = "aarch64" ]; then \
-			curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-linux-aarch64-1.17.1.tgz -o libs/onnxruntime.tgz; \
-		else \
-			curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-linux-x64-1.17.1.tgz -o libs/onnxruntime.tgz; \
-		fi \
-		tar -xzf libs/onnxruntime.tgz -C libs; \
-		mv libs/onnxruntime-linux-*/lib/libonnxruntime.so.1.17.1 libs/ 2>/dev/null || true; \
-		rm -rf libs/onnxruntime-linux-* libs/onnxruntime.tgz; \
-		ln -sf libonnxruntime.so.1.17.1 libs/libonnxruntime.so; \
-		echo "Downloaded: libs/libonnxruntime.so"; \
-	elif [ "$(shell uname -s)" = "Darwin" ]; then \
-		if [ "$(shell uname -m)" = "arm64" ]; then \
-			curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-osx-arm64-1.17.1.tgz -o libs/onnxruntime.tgz; \
-		else \
-			curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-osx-x86_64-1.17.1.tgz -o libs/onnxruntime.tgz; \
-		fi \
-		tar -xzf libs/onnxruntime.tgz -C libs; \
-		mv libs/onnxruntime-osx-*/lib/libonnxruntime.dylib libs/ 2>/dev/null || true; \
-		rm -rf libs/onnxruntime-osx-* libs/onnxruntime.tgz; \
-		echo "Downloaded: libs/libonnxruntime.dylib"; \
-	else \
-		curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-win-x64-1.17.1.zip -o libs/onnxruntime.zip; \
-		unzip -q libs/onnxruntime.zip -d libs; \
-		mv libs/onnxruntime-win-x64-*/onnxruntime.dll libs/ 2>/dev/null || true; \
-		rm -rf libs/onnxruntime-win-x64-* libs/onnxruntime.zip; \
-		echo "Downloaded: libs/onnxruntime.dll"; \
-	fi
+	@ORT_VERSION="1.26.0"; \
+	OS=$$(uname -s); \
+	ARCH=$$(uname -m); \
+	case "$$OS" in \
+		"Linux") \
+			if [ "$$ARCH" = "aarch64" ]; then PLATFORM="linux-aarch64"; else PLATFORM="linux-x64"; fi; \
+			URL="https://github.com/microsoft/onnxruntime/releases/download/v$$ORT_VERSION/onnxruntime-$$PLATFORM-$$ORT_VERSION.tgz"; \
+			echo "Fetching $$URL..."; \
+			curl -L $$URL -o libs/ort.tgz; \
+			tar -xzf libs/ort.tgz -C libs; \
+			mv libs/onnxruntime-$$PLATFORM-*/lib/libonnxruntime.so.$$ORT_VERSION libs/; \
+			ln -sf libonnxruntime.so.$$ORT_VERSION libs/libonnxruntime.so; \
+			rm -rf libs/onnxruntime-$$PLATFORM-* libs/ort.tgz; \
+			;; \
+		"Darwin") \
+			if [ "$$ARCH" = "arm64" ]; then PLATFORM="osx-arm64"; else PLATFORM="osx-x86_64"; fi; \
+			URL="https://github.com/microsoft/onnxruntime/releases/download/v$$ORT_VERSION/onnxruntime-$$PLATFORM-$$ORT_VERSION.tgz"; \
+			echo "Fetching $$URL..."; \
+			curl -L $$URL -o libs/ort.tgz; \
+			tar -xzf libs/ort.tgz -C libs; \
+			mv libs/onnxruntime-$$PLATFORM-*/lib/libonnxruntime.dylib libs/; \
+			rm -rf libs/onnxruntime-$$PLATFORM-* libs/ort.tgz; \
+			;; \
+		*) \
+			PLATFORM="win-x64"; \
+			URL="https://github.com/microsoft/onnxruntime/releases/download/v$$ORT_VERSION/onnxruntime-$$PLATFORM-$$ORT_VERSION.zip"; \
+			echo "Fetching $$URL..."; \
+			curl -L $$URL -o libs/ort.zip; \
+			unzip -q libs/ort.zip -d libs; \
+			mv libs/onnxruntime-$$PLATFORM-*/onnxruntime.dll libs/; \
+			rm -rf libs/onnxruntime-$$PLATFORM-* libs/ort.zip; \
+			;; \
+	esac
+	@echo "Done."

@@ -149,13 +149,13 @@ func NewONNXEmbedder(
 			"last_hidden_state",
 		},
 
-		[]onnxruntime_go.Value{
+		[]onnxruntime_go.ArbitraryTensor{
 			inputIDs,
 			attention,
 			tokenTypeIDs,
 		},
 
-		[]onnxruntime_go.Value{
+		[]onnxruntime_go.ArbitraryTensor{
 			outputTensor,
 		},
 

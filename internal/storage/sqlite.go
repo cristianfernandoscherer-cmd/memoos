@@ -299,6 +299,32 @@ func (s *SQLiteStorage) Ping(ctx context.Context) error {
 	return s.db.PingContext(ctx)
 }
 
+func (s *SQLiteStorage) ClearMemories(ctx context.Context, filter models.MemoryFilter) (int64, error) {
+	query := "DELETE FROM memories WHERE 1=1"
+	args := []interface{}{}
+
+	if filter.Project != "" {
+		query += " AND project = ?"
+		args = append(args, filter.Project)
+	}
+	if filter.Category != nil {
+		query += " AND category = ?"
+		args = append(args, *filter.Category)
+	}
+
+	result, err := s.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("failed to clear memories: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	return rowsAffected, nil
+}
+
 func (s *SQLiteStorage) Close() error {
 	return s.db.Close()
 }

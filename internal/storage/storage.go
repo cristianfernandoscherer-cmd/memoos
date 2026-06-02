@@ -13,6 +13,7 @@ type Storage interface {
 	ListMemories(ctx context.Context, filter models.MemoryFilter, pagination *models.Pagination) ([]models.Memory, error)
 	DeleteMemory(ctx context.Context, id int64) error
 	SearchMemories(ctx context.Context, queryEmbedding []float32, filter models.MemoryFilter, limit int) ([]models.SearchResult, error)
+	ClearMemories(ctx context.Context, filter models.MemoryFilter) (int64, error)
 
 	ListCategories(ctx context.Context, project string) ([]string, error)
 

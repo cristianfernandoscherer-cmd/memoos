@@ -203,3 +203,19 @@ func (s *Service) Health(ctx context.Context) error {
 
 	return nil
 }
+
+func (s *Service) ClearMemories(ctx context.Context, filter models.MemoryFilter) (int64, error) {
+	op := logger.NewOperation(s.logger, "clear_memories",
+		logger.F("project", filter.Project),
+		logger.F("category", filter.Category),
+	)
+	defer op.Success()
+
+	count, err := s.storage.ClearMemories(ctx, filter)
+	if err != nil {
+		op.Error(err)
+		return 0, errors.DatabaseError(err, "clear_memories")
+	}
+
+	return count, nil
+}

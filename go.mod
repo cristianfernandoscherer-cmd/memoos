@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/sugarme/tokenizer v0.3.0
-	github.com/yalue/onnxruntime_go v1.30.1
+	github.com/yalue/onnxruntime_go v1.8.0
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.28.0

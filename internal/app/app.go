@@ -8,6 +8,7 @@ import (
 	"github.com/cristian-scherer/memoos/internal/embedding"
 	"github.com/cristian-scherer/memoos/internal/logger"
 	"github.com/cristian-scherer/memoos/internal/memory"
+	"github.com/cristian-scherer/memoos/internal/models"
 	"github.com/cristian-scherer/memoos/internal/storage"
 )
 
@@ -86,6 +87,10 @@ func (a *App) Health(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (a *App) ClearMemories(ctx context.Context, filter models.MemoryFilter) (int64, error) {
+	return a.MemService.ClearMemories(ctx, filter)
 }
 
 func (a *App) Close() error {
